@@ -1,0 +1,5 @@
+1.Xóa container
+Docker rm <Container Name>
+
+2.Lấy log container
+Docker container logs <Container Name>

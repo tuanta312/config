@@ -1,0 +1,24 @@
+Tạo container kong api gateway và lưu dữ liệu trên PostgreSQL trước đó
+
+B1: Tạo network cho kong
+docker network create kong-net
+
+B2: Tạo connect giữa PostgreSQL-9
+docker network connect kong-net PostgreSQL-9
+
+B3: Trong PostgreSQL-9 tạo database tên là kong
+
+B4: Tạo container kong
+4.1: Kong
+docker run --rm --network=kong-net  -e "KONG_DATABASE=postgres"  -e "KONG_PG_HOST=PostgreSQL-9" -e "KONG_PG_USER=postgres" -e "KONG_PG_PASSWORD=admin@123"  -e "KONG_PASSWORD=admin@123" kong/kong-gateway:3.10.0.1 kong migrations bootstrap
+
+docker run -d --name kong-gateway --network=kong-net -e "KONG_DATABASE=postgres" -e "KONG_PG_HOST=PostgreSQL-9" -e "KONG_PG_USER=postgres" -e "KONG_PG_PASSWORD=admin@123" -e "KONG_PROXY_ACCESS_LOG=/dev/stdout" -e "KONG_ADMIN_ACCESS_LOG=/dev/stdout" -e "KONG_PROXY_ERROR_LOG=/dev/stderr" -e "KONG_ADMIN_ERROR_LOG=/dev/stderr" -e "KONG_ADMIN_LISTEN=0.0.0.0:8001" -e "KONG_ADMIN_GUI_URL=http://localhost:8002" -e KONG_LICENSE_DATA -p 8000:8000 -p 8443:8443 -p 8001:8001 -p 8444:8444 -p 8002:8002 -p 8445:8445 -p 8003:8003 -p 8004:8004 kong/kong-gateway:3.10.0.1
+
+4.2: Konga
+docker run --rm --network=kong-net pantsel/konga:latest -c prepare -a postgres -u postgresql://postgres:admin@123@PostgreSQL-9:5432/konga
+
+docker run -d --name konga --network=kong-net -e "DB_ADAPTER=postgres" -e "DB_HOST=PostgreSQL-9" -e "DB_PORT=5432" -e "DB_USER=postgres" -e "DB_PASSWORD=admin@123" -e "DB_DATABASE=konga" -e "NODE_ENV=production" -p 1337:1337 pantsel/konga:latest
+
+*lưu ý: nếu chưa pull image kong:latest về thì khi chạy lệnh này docker sẽ tự động pull image về
+
+B5: Kiểm tra kong đã được tạo database trong PostgreSQL-9 chưa
