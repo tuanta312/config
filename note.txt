@@ -3,3 +3,6 @@ Docker rm <Container Name>
 
 2.Lấy log container
 Docker container logs <Container Name>
+
+3. Kiểm tra tài nguyên đang sử dụng
+Docker stats
